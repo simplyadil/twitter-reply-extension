@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Twitter Reply Generator</title>
+    <style>
+        body {
+            width: 320px;
+            min-height: 300px;
+            margin: 0;
+            padding: 16px;
+            font-family: Arial, sans-serif;
+            background: white;
+            color: black;
+        }
+        
+        h1 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            color: #1d9bf0;
+            text-align: center;
+        }
+        
+        .section {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #1d9bf0;
+        }
+        
+        .section h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .section p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .toggle-row label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .toggle.active {
+            background: #1d9bf0;
+        }
+        
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+        
+        .toggle.active::after {
+            left: 22px;
+        }
+        
+        input[type="checkbox"] {
+            display: none;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 8px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .button:hover {
+            background: #3367d6;
+        }
+        
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #666;
+            margin-top: 12px;
+        }
+        
+        .link {
+            color: #4285f4;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>💬 Twitter Reply Generator</h1>
+    
+    <div class="section">
+        <h3>Status</h3>
+        <p id="status-text">Extension is active</p>
+    </div>
+    
+    <div class="section">
+        <h3>Settings</h3>
+        
+        <div class="toggle-row">
+            <label for="enabled-toggle">Enable Extension</label>
+            <div class="toggle" id="enabled-toggle-container">
+                <input type="checkbox" id="enabled-toggle" checked>
+            </div>
+        </div>
+        
+        <div class="toggle-row">
+            <label for="use-gemini-toggle">Use Gemini AI</label>
+            <div class="toggle" id="use-gemini-toggle-container">
+                <input type="checkbox" id="use-gemini-toggle" checked>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="gemini-api-key">Gemini API Key</label>
+            <input type="password" id="gemini-api-key" placeholder="Enter your API key">
+        </div>
+        
+        <div class="input-group">
+            <label for="max-suggestions">Max Suggestions</label>
+            <input type="number" id="max-suggestions" min="1" max="10" value="5">
+        </div>
+        
+        <button class="button" id="test-api-btn">Test API Connection</button>
+        <a href="https://makersuite.google.com/app/apikey" target="_blank" class="link" style="display: block; text-align: center; margin-top: 8px;">Get Gemini API Key</a>
+    </div>
+    
+    <div class="stats">
+        <span id="tweets-processed">Tweets: 0</span>
+        <span id="replies-generated">Replies: 0</span>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html> 
