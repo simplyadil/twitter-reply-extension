@@ -1,60 +1,21 @@
-/* Twitter Reply Generator Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Reply Button Styling */
-.twitter-reply-btn {
-  background: none;
-  border: none;
-  color: #536471;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
+/* Custom animations for Twitter-like interactions */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.twitter-reply-btn:hover {
-  background-color: rgba(29, 155, 240, 0.1);
-  color: #1d9bf0;
-}
-
-.twitter-reply-btn:active {
-  transform: scale(0.95);
-}
-
-/* Popup Styling */
-.twitter-reply-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.twitter-reply-popup-content {
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
-  width: 90%;
-  max-height: 80vh;
-  overflow: hidden;
-  animation: popupSlideIn 0.3s ease-out;
-}
-
-@keyframes popupSlideIn {
+@keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-32px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -62,131 +23,91 @@
   }
 }
 
-.twitter-reply-popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e1e8ed;
-  background-color: #ffffff;
-}
-
-.twitter-reply-popup-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f1419;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #536471;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-}
-
-.close-btn:hover {
-  background-color: #f7f9fa;
-  color: #0f1419;
-}
-
-.twitter-reply-suggestions {
-  padding: 16px 20px;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.twitter-reply-suggestion {
-  display: block;
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 8px;
-  background-color: #f7f9fa;
-  border: 1px solid #e1e8ed;
-  border-radius: 8px;
-  text-align: left;
-  font-size: 14px;
-  color: #0f1419;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  word-wrap: break-word;
-  line-height: 1.4;
-}
-
-.twitter-reply-suggestion:hover {
-  background-color: #e8f5fd;
-  border-color: #1d9bf0;
-  color: #1d9bf0;
-}
-
-.twitter-reply-suggestion:last-child {
-  margin-bottom: 0;
-}
-
-.twitter-reply-suggestion:active {
-  transform: scale(0.98);
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .twitter-reply-popup-content {
-    background-color: #15202b;
-    color: #ffffff;
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
   }
-  
-  .twitter-reply-popup-header {
-    background-color: #15202b;
-    border-bottom-color: #38444d;
-  }
-  
-  .twitter-reply-popup-header h3 {
-    color: #ffffff;
-  }
-  
-  .twitter-reply-suggestion {
-    background-color: #192734;
-    border-color: #38444d;
-    color: #ffffff;
-  }
-  
-  .twitter-reply-suggestion:hover {
-    background-color: #1a2d3a;
-    border-color: #1d9bf0;
-    color: #1d9bf0;
-  }
-  
-  .close-btn:hover {
-    background-color: #192734;
-    color: #ffffff;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
-  .twitter-reply-popup-content {
-    width: 95%;
-    max-width: none;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
   }
-  
-  .twitter-reply-popup-header {
-    padding: 12px 16px;
+  50% {
+    opacity: 1;
   }
-  
-  .twitter-reply-suggestions {
-    padding: 12px 16px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  .twitter-reply-suggestion {
-    padding: 10px 12px;
-    font-size: 13px;
+  to {
+    opacity: 1;
   }
-} 
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 1s linear infinite;
+  }
+
+  .animate-modal-slide-in {
+    animation: modalSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .animate-modal-slide-up {
+    animation: modalSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-in-out;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(239 243 244);
+    border-radius: 3px;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(47 51 54);
+  }
+}
