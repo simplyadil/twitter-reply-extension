@@ -1,33 +1,46 @@
 {
   "manifest_version": 3,
   "name": "Twitter Reply Generator",
-  "version": "1.0.0",
-  "description": "Generate reply suggestions for Twitter posts using Gemini AI",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "version": "2.0.0",
+  "description": "Generate reply suggestions for Twitter posts using Gemini AI or OpenAI",
+  "permissions": ["activeTab", "storage"],
   "host_permissions": [
     "https://twitter.com/*",
     "https://x.com/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*"
   ],
   "content_scripts": [
     {
-      "matches": [
-        "https://twitter.com/*",
-        "https://x.com/*"
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": [
+        "tailwind_v4.js",
+        "src/config/constants.js",
+        "src/utils/dom-utils.js",
+        "src/utils/text-utils.js",
+        "src/services/tweet-scraping-service.js",
+        "src/services/ai-reply-service.js",
+        "src/ui/reply-button-component.js",
+        "src/ui/suggestions-popup-component.js",
+        "src/core/tweet-observer.js",
+        "src/core/twitter-reply-generator.js",
+        "src/content-script.js"
       ],
-      "js": ["config.js", "content.js"],
-      "css": ["styles.css"],
+      "css": ["styles.css", "src/ui/suggestions-popup.css"],
       "run_at": "document_end"
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
   "action": {
     "default_popup": "popup.html",
     "default_title": "Twitter Reply Generator"
-  }
-} 
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["src/config/constants.js"],
+      "matches": ["https://twitter.com/*", "https://x.com/*"]
+    }
+  ]
+}

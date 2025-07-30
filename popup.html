@@ -1,195 +1,629 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
+<html class="h-full">
+  <head>
+    <meta charset="UTF-8" />
     <title>Twitter Reply Generator</title>
+    <script src="./tailwind_v4.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        body {
-            width: 320px;
-            min-height: 300px;
-            margin: 0;
-            padding: 16px;
-            font-family: Arial, sans-serif;
-            background: white;
-            color: black;
+      /* Twitter X Design System Variables */
+      :root {
+        --twitter-blue: #1d9bf0;
+        --twitter-blue-hover: #1a8cd8;
+        --twitter-blue-light: rgba(29, 155, 240, 0.1);
+        --twitter-text-primary: #0f1419;
+        --twitter-text-secondary: #536471;
+        --twitter-background: #ffffff;
+        --twitter-background-secondary: #f7f9fa;
+        --twitter-border: #eff3f4;
+        --twitter-border-hover: #d6dbdc;
+        --twitter-error: #f4212e;
+        --twitter-success: #00ba7c;
+        --twitter-warning: #ffad1f;
+
+        /* Font family */
+        --twitter-font: TwitterChirp, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      /* Dark mode variables */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --twitter-background: #000000;
+          --twitter-background-secondary: #16181c;
+          --twitter-text-primary: #e7e9ea;
+          --twitter-text-secondary: #71767b;
+          --twitter-border: #2f3336;
+          --twitter-border-hover: #3e4144;
+          --twitter-blue-light: rgba(29, 155, 240, 0.2);
         }
-        
-        h1 {
-            margin: 0 0 16px 0;
-            font-size: 18px;
-            color: #1d9bf0;
-            text-align: center;
+      }
+
+      /* Base styles */
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--twitter-font);
+        margin: 0;
+        padding: 0;
+        background-color: var(--twitter-background);
+        color: var(--twitter-text-primary);
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      /* Twitter X Toggle Switch */
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background-color: var(--twitter-border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        outline: none;
+      }
+
+      .toggle-switch:focus-visible {
+        outline: 2px solid var(--twitter-blue);
+        outline-offset: 2px;
+      }
+
+      .toggle-switch.active {
+        background-color: var(--twitter-blue);
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: var(--twitter-background);
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 3px,
+          rgba(0, 0, 0, 0.16) 0px 4px 12px;
+      }
+
+      .toggle-switch.active::after {
+        transform: translateX(20px);
+      }
+
+      /* Hide default checkbox */
+      input[type="checkbox"] {
+        display: none;
+      }
+
+      /* Loading spinner animation */
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-        
-        .section {
-            margin-bottom: 16px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #1d9bf0;
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Status indicator styles - Twitter X Design */
+      .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        position: relative;
+      }
+
+      .status-active {
+        background-color: var(--twitter-success);
+      }
+
+      .status-active::after {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background-color: var(--twitter-success);
+        opacity: 0.3;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      .status-inactive {
+        background-color: var(--twitter-text-secondary);
+      }
+
+      .status-error {
+        background-color: var(--twitter-error);
+      }
+
+      .status-error::after {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background-color: var(--twitter-error);
+        opacity: 0.3;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      /* Animations */
+      .fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-        
-        .section h3 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            font-weight: bold;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        
-        .section p {
-            margin: 0;
-            font-size: 12px;
-            color: #666;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.3;
+          transform: scale(1);
         }
-        
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+        50% {
+          opacity: 0.7;
+          transform: scale(1.1);
         }
-        
-        .toggle-row label {
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .toggle {
-            position: relative;
-            width: 40px;
-            height: 20px;
-            background: #ccc;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        
-        .toggle.active {
-            background: #1d9bf0;
-        }
-        
-        .toggle::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: 0.3s;
-        }
-        
-        .toggle.active::after {
-            left: 22px;
-        }
-        
-        input[type="checkbox"] {
-            display: none;
-        }
-        
-        .input-group {
-            margin-bottom: 12px;
-        }
-        
-        .input-group label {
-            display: block;
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 12px;
-            box-sizing: border-box;
-        }
-        
-        .button {
-            width: 100%;
-            padding: 8px;
-            background: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-top: 8px;
-        }
-        
-        .button:hover {
-            background: #3367d6;
-        }
-        
-        .button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #666;
-            margin-top: 12px;
-        }
-        
-        .link {
-            color: #4285f4;
-            text-decoration: none;
-            font-size: 11px;
-        }
-        
-        .link:hover {
-            text-decoration: underline;
-        }
+      }
+
+      /* Button styles - Twitter X Design */
+      .button-primary {
+        background-color: var(--twitter-blue);
+        color: var(--twitter-background);
+        border: 1px solid var(--twitter-blue);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 700;
+        border-radius: 9999px;
+        outline: none;
+        cursor: pointer;
+        font-family: var(--twitter-font);
+      }
+
+      .button-primary:hover:not(:disabled) {
+        background-color: var(--twitter-blue-hover);
+        border-color: var(--twitter-blue-hover);
+      }
+
+      .button-primary:focus-visible {
+        outline: 2px solid var(--twitter-blue);
+        outline-offset: 2px;
+      }
+
+      .button-primary:disabled {
+        background-color: var(--twitter-text-secondary);
+        border-color: var(--twitter-text-secondary);
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .button-secondary {
+        background-color: transparent;
+        border: 1px solid var(--twitter-border);
+        color: var(--twitter-text-primary);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 700;
+        border-radius: 9999px;
+        outline: none;
+        cursor: pointer;
+        font-family: var(--twitter-font);
+      }
+
+      .button-secondary:hover:not(:disabled) {
+        background-color: var(--twitter-background-secondary);
+        border-color: var(--twitter-border-hover);
+      }
+
+      .button-secondary:focus-visible {
+        outline: 2px solid var(--twitter-blue);
+        outline-offset: 2px;
+      }
+
+      .button-secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Input styles - Twitter X Design */
+      .input-field {
+        background-color: var(--twitter-background);
+        border: 1px solid var(--twitter-border);
+        color: var(--twitter-text-primary);
+        border-radius: 8px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        outline: none;
+        font-family: var(--twitter-font);
+      }
+
+      .input-field:hover {
+        border-color: var(--twitter-border-hover);
+      }
+
+      .input-field:focus {
+        border-color: var(--twitter-blue);
+        box-shadow: 0 0 0 2px var(--twitter-blue-light);
+      }
+
+      .input-field::placeholder {
+        color: var(--twitter-text-secondary);
+      }
+
+      /* Select styles */
+      .select-field {
+        background-color: var(--twitter-background);
+        border: 1px solid var(--twitter-border);
+        color: var(--twitter-text-primary);
+        border-radius: 8px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        outline: none;
+        font-family: var(--twitter-font);
+        cursor: pointer;
+      }
+
+      .select-field:hover {
+        border-color: var(--twitter-border-hover);
+      }
+
+      .select-field:focus {
+        border-color: var(--twitter-blue);
+        box-shadow: 0 0 0 2px var(--twitter-blue-light);
+      }
+
+      /* Card/Section styles */
+      .card {
+        background-color: var(--twitter-background-secondary);
+        border: 1px solid var(--twitter-border);
+        border-radius: 12px;
+      }
+
+      /* Link styles */
+      .link {
+        color: var(--twitter-blue);
+        text-decoration: none;
+        transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .link:hover {
+        color: var(--twitter-blue-hover);
+        text-decoration: underline;
+      }
+
+      /* Scrollbar styles */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--twitter-border) transparent;
+      }
+
+      *::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background-color: var(--twitter-border);
+        border-radius: 3px;
+      }
+
+      *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--twitter-border-hover);
+      }
     </style>
-</head>
-<body>
-    <h1>💬 Twitter Reply Generator</h1>
-    
-    <div class="section">
-        <h3>Status</h3>
-        <p id="status-text">Extension is active</p>
-    </div>
-    
-    <div class="section">
-        <h3>Settings</h3>
-        
-        <div class="toggle-row">
-            <label for="enabled-toggle">Enable Extension</label>
-            <div class="toggle" id="enabled-toggle-container">
-                <input type="checkbox" id="enabled-toggle" checked>
+  </head>
+  <body class="w-80" style="background-color: var(--twitter-background)">
+    <div class="fade-in">
+      <!-- Header -->
+      <div
+        style="
+          background-color: var(--twitter-background);
+          border-bottom: 1px solid var(--twitter-border);
+        "
+        class="px-4 py-4"
+      >
+        <div class="flex items-center space-x-2 mb-3">
+          <h1
+            class="text-xl font-bold"
+            style="
+              color: var(--twitter-text-primary);
+              font-family: var(--twitter-font);
+            "
+          >
+            Reply Generator
+          </h1>
+        </div>
+
+        <!-- Status Box -->
+        <div
+          class="card p-3 transition-all duration-200 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <span
+                id="status-indicator"
+                class="w-2 h-2 rounded-full mr-2 transition-all duration-300 ease-in-out"
+              ></span>
+              <span
+                id="status-text"
+                class="text-sm font-medium transition-colors duration-300 ease-in-out"
+                style="color: var(--twitter-text-secondary)"
+                >Checking...</span
+              >
             </div>
-        </div>
-        
-        <div class="toggle-row">
-            <label for="use-gemini-toggle">Use Gemini AI</label>
-            <div class="toggle" id="use-gemini-toggle-container">
-                <input type="checkbox" id="use-gemini-toggle" checked>
+            <button
+              id="refresh-status"
+              class="p-1 rounded-full transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style="color: var(--twitter-text-secondary)"
+              title="Refresh status"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Detailed Status Information -->
+          <div
+            id="status-details"
+            class="text-xs space-y-1"
+            style="color: var(--twitter-text-secondary)"
+          >
+            <div id="tab-status" class="flex items-center">
+              <span
+                class="w-2 h-2 rounded-full mr-2 bg-gray-300 transition-colors duration-300"
+              ></span>
+              <span>Checking current page...</span>
             </div>
+            <div id="api-status" class="flex items-center">
+              <span
+                class="w-2 h-2 rounded-full mr-2 bg-gray-300 transition-colors duration-300"
+              ></span>
+              <span>Checking API key...</span>
+            </div>
+            <div id="extension-status" class="flex items-center">
+              <span
+                class="w-2 h-2 rounded-full mr-2 bg-gray-300 transition-colors duration-300"
+              ></span>
+              <span>Checking extension...</span>
+            </div>
+          </div>
         </div>
-        
-        <div class="input-group">
-            <label for="gemini-api-key">Gemini API Key</label>
-            <input type="password" id="gemini-api-key" placeholder="Enter your API key">
+      </div>
+
+      <!-- Main Content -->
+      <div class="p-4 space-y-6">
+        <!-- Extension Toggle -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col">
+            <span
+              class="text-sm font-bold"
+              style="
+                color: var(--twitter-text-primary);
+                font-family: var(--twitter-font);
+              "
+              >Enable Extension</span
+            >
+            <span class="text-sm" style="color: var(--twitter-text-secondary)"
+              >Turn on AI reply suggestions</span
+            >
+          </div>
+          <label for="enabled-toggle" class="relative">
+            <input type="checkbox" id="enabled-toggle" />
+            <div id="enabled-toggle-container" class="toggle-switch"></div>
+          </label>
         </div>
-        
-        <div class="input-group">
-            <label for="max-suggestions">Max Suggestions</label>
-            <input type="number" id="max-suggestions" min="1" max="10" value="5">
+
+        <!-- Settings Section -->
+        <div class="space-y-4">
+          <h3
+            class="text-sm font-bold"
+            style="
+              color: var(--twitter-text-primary);
+              font-family: var(--twitter-font);
+            "
+          >
+            Settings
+          </h3>
+
+          <!-- AI Provider Selection -->
+          <div class="space-y-2">
+            <label
+              for="ai-provider"
+              class="block text-sm font-bold"
+              style="color: var(--twitter-text-primary)"
+            >
+              AI Provider
+            </label>
+            <select
+              id="ai-provider"
+              class="select-field w-full px-3 py-3 text-sm"
+            >
+              <option value="gemini">Gemini (Google)</option>
+              <option value="openai">OpenAI (GPT)</option>
+            </select>
+            <p class="text-xs" style="color: var(--twitter-text-secondary)">
+              Choose which AI service to use for generating replies
+            </p>
+          </div>
+
+          <!-- API Key (Dynamic) -->
+          <div class="space-y-2">
+            <label
+              for="api-key"
+              class="block text-sm font-bold"
+              style="color: var(--twitter-text-primary)"
+            >
+              <span id="api-key-label">Gemini API Key</span>
+            </label>
+            <div class="relative">
+              <input
+                type="password"
+                id="api-key"
+                placeholder="Enter your Gemini API key"
+                class="input-field w-full px-3 py-3 text-sm pr-16"
+              />
+              <div
+                class="absolute inset-y-0 right-0 flex items-center space-x-1 pr-3"
+              >
+                <div
+                  id="api-key-status"
+                  class="w-4 h-4 flex items-center justify-center"
+                ></div>
+                <button
+                  id="toggle-password-visibility"
+                  type="button"
+                  class="p-1 rounded-full transition-colors duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style="color: var(--twitter-text-secondary)"
+                >
+                  <svg
+                    id="eye-icon"
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    ></path>
+                  </svg>
+                  <svg
+                    id="eye-off-icon"
+                    class="w-4 h-4 hidden"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <p class="text-xs" style="color: var(--twitter-text-secondary)">
+              Get your API key from
+              <a
+                id="api-key-link"
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                class="link"
+                >Google AI Studio</a
+              >
+            </p>
+          </div>
+
+          <!-- Max Suggestions -->
+          <div class="space-y-2">
+            <label
+              for="max-suggestions"
+              class="block text-sm font-bold"
+              style="color: var(--twitter-text-primary)"
+            >
+              Max Suggestions
+            </label>
+            <select
+              id="max-suggestions"
+              class="select-field w-full px-3 py-3 text-sm"
+            >
+              <option value="3">3 suggestions</option>
+              <option value="4">4 suggestions</option>
+              <option value="5">5 suggestions</option>
+              <option value="6">6 suggestions</option>
+              <option value="7">7 suggestions</option>
+            </select>
+          </div>
+
+          <!-- Statistics Card -->
+          <div class="card p-4">
+            <h3
+              class="text-sm font-bold mb-3"
+              style="
+                color: var(--twitter-text-primary);
+                font-family: var(--twitter-font);
+              "
+            >
+              Statistics
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center">
+                <div
+                  id="tweets-processed-count"
+                  class="text-2xl font-bold"
+                  style="color: var(--twitter-blue)"
+                >
+                  0
+                </div>
+                <div
+                  class="text-xs"
+                  style="color: var(--twitter-text-secondary)"
+                >
+                  Tweets Processed
+                </div>
+              </div>
+              <div class="text-center">
+                <div
+                  id="replies-generated-count"
+                  class="text-2xl font-bold"
+                  style="color: var(--twitter-success)"
+                >
+                  0
+                </div>
+                <div
+                  class="text-xs"
+                  style="color: var(--twitter-text-secondary)"
+                >
+                  Replies Generated
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <button class="button" id="test-api-btn">Test API Connection</button>
-        <a href="https://makersuite.google.com/app/apikey" target="_blank" class="link" style="display: block; text-align: center; margin-top: 8px;">Get Gemini API Key</a>
+      </div>
     </div>
-    
-    <div class="stats">
-        <span id="tweets-processed">Tweets: 0</span>
-        <span id="replies-generated">Replies: 0</span>
-    </div>
-    
-    <script src="popup.js"></script>
-</body>
-</html> 
+
+    <!-- Load the popup controller -->
+    <script src="src/popup/popup-controller.js"></script>
+  </body>
+</html>
