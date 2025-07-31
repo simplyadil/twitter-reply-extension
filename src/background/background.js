@@ -197,7 +197,7 @@ async function generateWithOpenAI(tweetData, settings) {
       Authorization: `Bearer ${settings.openaiApiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 500,
       temperature: 0.7,
@@ -260,7 +260,7 @@ Hashtags: ${tweetData.hashtags ? tweetData.hashtags.join(", ") : "None"}
 Mentions: ${tweetData.mentions ? tweetData.mentions.join(", ") : "None"}
 Author: ${tweetData.author || "Unknown"}
 
-Generate only the reply suggestions, one per line, without numbering or additional text.`;
+Generate only the reply suggestions, one per line, without numbering or additional text, don't return a list - at the beginning of the response.`;
 }
 
 function generateLocalSuggestions(tweetData, maxSuggestions = 5) {

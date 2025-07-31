@@ -73,7 +73,7 @@ Hashtags: {hashtags}
 Mentions: {mentions}
 Author: {author}
 
-Generate only the reply suggestions, one per line, without numbering or additional text.`,
+Generate only the reply suggestions, one per line, without numbering or additional text in JSON format.`,
   },
 
   FALLBACK_SUGGESTIONS: [
