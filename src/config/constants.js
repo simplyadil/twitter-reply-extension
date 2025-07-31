@@ -10,7 +10,7 @@ const CONSTANTS = {
       ENDPOINT: "https://api.openai.com/v1/chat/completions",
       TIMEOUT: 10000,
       MAX_RETRIES: 3,
-      MODEL: "gpt-3.5-turbo",
+      MODEL: "gpt-4o-mini",
     },
   },
 
