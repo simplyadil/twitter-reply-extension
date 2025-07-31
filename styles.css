@@ -110,4 +110,47 @@
   .dark .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: rgb(47 51 54);
   }
+
+  /* Error message styles */
+  .error-message-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  .error-message-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  .error-message-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .error-message-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+  }
+
+  /* API key error specific styles */
+  #api-key-error {
+    border-left-width: 4px;
+    border-left-style: solid;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+
+  #api-key-error.hidden {
+    display: none !important;
+  }
+
+  /* Dark mode support for error messages */
+  @media (prefers-color-scheme: dark) {
+    #api-key-error {
+      background-color: rgba(244, 33, 46, 0.1);
+    }
+  }
 }

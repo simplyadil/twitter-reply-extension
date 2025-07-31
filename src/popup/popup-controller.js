@@ -4,7 +4,7 @@ class PopupController {
     this.currentSettings = {};
     this.isInitialized = false;
     this.apiKeyValidationTimeout = null;
-    this.statusCheckInterval = null;
+    this.errorHideTimeout = null;
     this.init();
   }
 
@@ -18,8 +18,15 @@ class PopupController {
       await this.loadStats();
       this.initializeToggleState();
       await this.performComprehensiveStatusCheck();
-      this.startPeriodicStatusChecks();
+      // Remove periodic status checks - only check on changes
       this.isInitialized = true;
+
+      // Add cleanup when popup window closes
+      window.addEventListener("beforeunload", () => {
+        this.destroy();
+      });
+
+      // Remove visibility change listener since we're not doing periodic checks
     } catch (error) {
       // Silent fail - no toast needed
     }
@@ -39,6 +46,9 @@ class PopupController {
       apiKey: document.getElementById("api-key"),
       apiKeyLabel: document.getElementById("api-key-label"),
       apiKeyLink: document.getElementById("api-key-link"),
+      apiKeyError: document.getElementById("api-key-error"),
+      apiKeyErrorMessage: document.getElementById("api-key-error-message"),
+      apiKeyErrorClose: document.getElementById("api-key-error-close"),
       aiProvider: document.getElementById("ai-provider"),
       maxSuggestions: document.getElementById("max-suggestions"),
       tweetsProcessedCount: document.getElementById("tweets-processed-count"),
@@ -95,9 +105,16 @@ class PopupController {
     }
 
     if (this.elements.refreshStatus) {
-      this.elements.refreshStatus.addEventListener("click", () =>
-        this.performComprehensiveStatusCheck()
-      );
+      this.elements.refreshStatus.addEventListener("click", () => {
+        // Force a full status check when manually refreshing
+        this.forceFullStatusCheck();
+      });
+    }
+
+    if (this.elements.apiKeyErrorClose) {
+      this.elements.apiKeyErrorClose.addEventListener("click", () => {
+        this.hideApiKeyError();
+      });
     }
   }
 
@@ -132,8 +149,17 @@ class PopupController {
     }
   }
 
+  async forceFullStatusCheck() {
+    // Perform a full status check with visual feedback
+    this.updateStatus("checking", "Checking...");
+    this.updateDetailedStatus("checking");
+
+    await this.performComprehensiveStatusCheck();
+  }
+
   async performComprehensiveStatusCheck() {
     try {
+      // Always show checking status since we're not doing periodic checks
       this.updateStatus("checking", "Checking...");
       this.updateDetailedStatus("checking");
 
@@ -310,17 +336,64 @@ class PopupController {
     return { status: "active", message: "Extension is ready to use" };
   }
 
-  startPeriodicStatusChecks() {
-    this.statusCheckInterval = setInterval(() => {
-      this.performComprehensiveStatusCheck();
-    }, 3000); // Faster status checks
+  // Remove periodic status check methods - no longer needed
+
+  showApiKeyError(message) {
+    if (!this.elements.apiKeyError || !this.elements.apiKeyErrorMessage) return;
+
+    // Format and truncate the error message
+    const formattedMessage = this.formatErrorMessage(message);
+
+    this.elements.apiKeyErrorMessage.textContent = formattedMessage;
+
+    // Clear any existing timeouts
+    if (this.errorHideTimeout) {
+      clearTimeout(this.errorHideTimeout);
+    }
+
+    // Simply remove hidden class - no complex animations for now
+    this.elements.apiKeyError.classList.remove("hidden");
+
+    // Auto-hide after 10 seconds
+    this.errorHideTimeout = setTimeout(() => {
+      this.hideApiKeyError();
+    }, 10000);
   }
 
-  stopPeriodicStatusChecks() {
-    if (this.statusCheckInterval) {
-      clearInterval(this.statusCheckInterval);
-      this.statusCheckInterval = null;
+  hideApiKeyError() {
+    if (!this.elements.apiKeyError) return;
+
+    // Clear any existing timeouts
+    if (this.errorHideTimeout) {
+      clearTimeout(this.errorHideTimeout);
+      this.errorHideTimeout = null;
     }
+
+    // Simply add hidden class
+    this.elements.apiKeyError.classList.add("hidden");
+  }
+
+  formatErrorMessage(message) {
+    if (!message) return "Unknown error occurred";
+
+    // Clean up common API error messages
+    let formatted = message.trim();
+
+    // Remove common prefixes
+    formatted = formatted.replace(
+      /^(API error|Error|Gemini API error|OpenAI API error):\s*/i,
+      ""
+    );
+
+    // Truncate very long messages
+    if (formatted.length > 200) {
+      formatted = formatted.substring(0, 200) + "...";
+    }
+
+    // Capitalize first letter
+    formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+    return formatted;
   }
 
   handleApiKeyInput() {
@@ -350,6 +423,9 @@ class PopupController {
   handleAiProviderChange() {
     const provider = this.elements.aiProvider.value;
 
+    // Clear any existing error messages
+    this.hideApiKeyError();
+
     // Update the API key field label and placeholder
     if (provider === "gemini") {
       this.elements.apiKeyLabel.textContent = "Gemini API Key";
@@ -370,7 +446,8 @@ class PopupController {
         : this.currentSettings.openaiApiKey || "";
 
     this.elements.apiKey.value = newApiKey;
-    this.updateApiKeyVisualState(newApiKey);
+    // Don't call updateApiKeyVisualState here as it might hide error messages
+    // The status will be updated when the user interacts with the API key field
   }
 
   updateApiKeyVisualState(apiKey, status = null, errorMessage = null) {
@@ -392,6 +469,12 @@ class PopupController {
 
     if (!apiKey || apiKey.trim().length === 0) {
       statusIndicator.innerHTML = "";
+      this.hideApiKeyError(); // Hide error when no API key
+      return;
+    }
+
+    // If no status is provided, don't change the error state
+    if (status === null) {
       return;
     }
 
@@ -403,6 +486,7 @@ class PopupController {
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
       `;
+      this.hideApiKeyError(); // Hide error while validating
     } else if (status === "valid") {
       inputField.classList.add("border-green-500", "shadow-green-500/10");
       statusIndicator.innerHTML = `
@@ -410,6 +494,7 @@ class PopupController {
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       `;
+      this.hideApiKeyError(); // Hide error when valid
     } else if (status === "invalid" || status === "error") {
       inputField.classList.add("border-red-500", "shadow-red-500/10");
       statusIndicator.innerHTML = `
@@ -418,9 +503,13 @@ class PopupController {
         </svg>
       `;
 
-      // Add tooltip with error message if available
+      // Show error message in the dedicated error display
       if (errorMessage) {
-        inputField.setAttribute("title", errorMessage);
+        this.showApiKeyError(errorMessage);
+        // Also add tooltip for quick reference
+        inputField.setAttribute("title", this.formatErrorMessage(errorMessage));
+      } else {
+        this.hideApiKeyError();
       }
     }
   }
@@ -486,7 +575,8 @@ class PopupController {
     if (this.elements.apiKey) {
       const currentApiKey = this.getCurrentApiKey();
       this.elements.apiKey.value = currentApiKey || "";
-      this.updateApiKeyVisualState(currentApiKey || "");
+      // Don't call updateApiKeyVisualState here as it might hide error messages
+      // The status will be updated when the user interacts with the API key field
     }
   }
 
@@ -524,6 +614,7 @@ class PopupController {
         }
       }
 
+      // Trigger status check when toggle changes
       await this.performComprehensiveStatusCheck();
     } catch (error) {
       this.elements.enabledToggle.checked = !enabled;
@@ -534,6 +625,7 @@ class PopupController {
   async handleSettingChange(event) {
     const element = event.target;
     const setting = {};
+    let shouldCheckStatus = false;
 
     if (element === this.elements.apiKey) {
       const provider = this.currentSettings.aiProvider || "gemini";
@@ -542,11 +634,14 @@ class PopupController {
       } else {
         setting.openaiApiKey = element.value;
       }
+      shouldCheckStatus = true; // API key change should trigger status check
     } else if (element === this.elements.aiProvider) {
       setting.aiProvider = element.value;
       this.handleAiProviderChange(); // Update UI immediately
+      shouldCheckStatus = true; // Provider change should trigger status check
     } else if (element === this.elements.maxSuggestions) {
       setting.maxSuggestions = parseInt(element.value, 10);
+      // No status check needed for max suggestions change
     }
 
     if (Object.keys(setting).length > 0) {
@@ -556,6 +651,11 @@ class PopupController {
           settings: setting,
         });
         Object.assign(this.currentSettings, setting);
+
+        // Trigger status check if needed
+        if (shouldCheckStatus) {
+          await this.performComprehensiveStatusCheck();
+        }
       } catch (error) {
         console.error("Error saving settings:", error);
       }
@@ -742,9 +842,15 @@ class PopupController {
     } else if (result.success && result.hasApiKey && !result.isValid) {
       indicator.classList.add("bg-red-500");
       const errorMessage = result.errorMessage || "API key is invalid";
+      const formattedError = this.formatErrorMessage(errorMessage);
+      // Truncate for status display
+      const displayError =
+        formattedError.length > 50
+          ? formattedError.substring(0, 50) + "..."
+          : formattedError;
       text.innerHTML = `<svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-      </svg> ${errorMessage}`;
+      </svg> ${displayError}`;
     } else if (result.success && !result.hasApiKey) {
       indicator.classList.add("bg-yellow-500");
       text.innerHTML = `<svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
@@ -752,9 +858,15 @@ class PopupController {
       </svg> No API key provided`;
     } else {
       indicator.classList.add("bg-red-500");
+      const errorMessage = result.error || "Unknown error";
+      const formattedError = this.formatErrorMessage(errorMessage);
+      const displayError =
+        formattedError.length > 50
+          ? formattedError.substring(0, 50) + "..."
+          : formattedError;
       text.innerHTML = `<svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-      </svg> ${result.error || "Unknown error"}`;
+      </svg> ${displayError}`;
     }
   }
 
@@ -828,15 +940,24 @@ class PopupController {
   }
 
   destroy() {
-    this.stopPeriodicStatusChecks();
     if (this.apiKeyValidationTimeout) {
       clearTimeout(this.apiKeyValidationTimeout);
+      this.apiKeyValidationTimeout = null;
     }
+    if (this.errorHideTimeout) {
+      clearTimeout(this.errorHideTimeout);
+      this.errorHideTimeout = null;
+    }
+    this.isInitialized = false;
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  new PopupController();
+  // Prevent multiple instances
+  if (window.popupController) {
+    window.popupController.destroy();
+  }
+  window.popupController = new PopupController();
 });
 
 if (typeof module !== "undefined" && module.exports) {
