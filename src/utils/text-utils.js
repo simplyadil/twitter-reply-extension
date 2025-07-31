@@ -111,17 +111,17 @@ class TextUtils {
     const suggestions = [];
     const { text, hashtags, mentions } = tweetData;
 
-    if (!text) return CONSTANTS.FALLBACK_SUGGESTIONS.slice(0, 3);
+    if (!text)
+      return CONSTANTS.FALLBACK_SUGGESTIONS.slice(
+        0,
+        CONSTANTS.LIMITS.MIN_SUGGESTIONS
+      );
 
     const sentiment = this.detectSentiment(text);
     const isQuestion = this.isQuestion(text);
 
     if (isQuestion) {
-      suggestions.push(
-        "Great question! I'd love to hear more about this.",
-        "That's an interesting point to consider.",
-        "Thanks for bringing this up - it's worth discussing."
-      );
+      suggestions.push(...CONSTANTS.CONTEXTUAL_SUGGESTIONS.QUESTION);
     } else if (sentiment === "positive") {
       suggestions.push(
         "Love this perspective! Thanks for sharing.",
@@ -137,11 +137,16 @@ class TextUtils {
     }
 
     if (hashtags?.length) {
-      suggestions.push(`Love the ${hashtags[0]} vibes!`);
+      suggestions.push(
+        CONSTANTS.CONTEXTUAL_SUGGESTIONS.HASHTAG[0].replace(
+          "{hashtag}",
+          hashtags[0]
+        )
+      );
     }
 
-    if (text.length < 50) {
-      suggestions.push("Short and sweet! Thanks for sharing.");
+    if (text.length < CONSTANTS.LIMITS.MIN_TWEET_LENGTH) {
+      suggestions.push(...CONSTANTS.CONTEXTUAL_SUGGESTIONS.SHORT_TWEET);
     } else {
       suggestions.push(
         "This is really insightful, thanks for the detailed thoughts!"
@@ -151,10 +156,13 @@ class TextUtils {
     suggestions.push(
       "This resonates with me completely.",
       "Thanks for taking the time to share this.",
-      "Interesting perspective on this topic."
+      CONSTANTS.CONTEXTUAL_SUGGESTIONS.MINIMAL[1] // "Interesting perspective on this topic."
     );
 
-    return [...new Set(suggestions)].slice(0, 5);
+    return [...new Set(suggestions)].slice(
+      0,
+      CONSTANTS.DEFAULTS.MAX_SUGGESTIONS
+    );
   }
 
   static isValidTweetContent(tweetData) {

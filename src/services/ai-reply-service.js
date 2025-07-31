@@ -2,7 +2,7 @@ class AIReplyService {
   static async generateReplies(tweetData) {
     try {
       if (!TextUtils.isValidTweetContent(tweetData)) {
-        throw new Error("Invalid tweet content");
+        throw new Error(CONSTANTS.ERROR_MESSAGES.INVALID_TWEET_CONTENT);
       }
 
       // Try background script first
@@ -28,7 +28,7 @@ class AIReplyService {
       }
 
       // If we get here, no suggestions were generated
-      throw new Error("Failed to generate reply suggestions");
+      throw new Error(CONSTANTS.ERROR_MESSAGES.NO_SUGGESTIONS_GENERATED);
     } catch (error) {
       console.error("Error generating replies:", error);
       // Re-throw the error instead of falling back to demo suggestions
@@ -41,8 +41,8 @@ class AIReplyService {
       try {
         // Add timeout for background script communication
         const timeout = setTimeout(() => {
-          reject(new Error("Background script communication timeout"));
-        }, 10000);
+          reject(new Error(CONSTANTS.ERROR_MESSAGES.BACKGROUND_SCRIPT_TIMEOUT));
+        }, CONSTANTS.API.GEMINI.TIMEOUT);
 
         chrome.runtime.sendMessage(
           {
@@ -64,7 +64,8 @@ class AIReplyService {
             } else {
               // Handle error response from background script
               const errorMessage =
-                response?.error || "Failed to generate replies";
+                response?.error ||
+                CONSTANTS.ERROR_MESSAGES.NO_SUGGESTIONS_GENERATED;
               reject(new Error(errorMessage));
             }
           }
@@ -83,24 +84,28 @@ class AIReplyService {
     const suggestions = [...CONSTANTS.FALLBACK_SUGGESTIONS];
 
     if (tweetData.hashtags?.length) {
-      suggestions.unshift(`Love the ${tweetData.hashtags[0]} vibes!`);
-    }
-
-    if (TextUtils.isQuestion(tweetData.text)) {
-      suggestions.unshift("Great question! I'd love to hear more about this.");
-    }
-
-    // Ensure we always return at least 3 suggestions
-    const finalSuggestions = suggestions.slice(0, 5);
-    if (finalSuggestions.length < 3) {
-      finalSuggestions.push(
-        "Thanks for sharing this!",
-        "Interesting perspective!",
-        "Appreciate you posting this."
+      suggestions.unshift(
+        CONSTANTS.CONTEXTUAL_SUGGESTIONS.HASHTAG[0].replace(
+          "{hashtag}",
+          tweetData.hashtags[0]
+        )
       );
     }
 
-    return finalSuggestions.slice(0, 5);
+    if (TextUtils.isQuestion(tweetData.text)) {
+      suggestions.unshift(CONSTANTS.CONTEXTUAL_SUGGESTIONS.QUESTION[0]);
+    }
+
+    // Ensure we always return at least 3 suggestions
+    const finalSuggestions = suggestions.slice(
+      0,
+      CONSTANTS.DEFAULTS.MAX_SUGGESTIONS
+    );
+    if (finalSuggestions.length < CONSTANTS.LIMITS.MIN_SUGGESTIONS) {
+      finalSuggestions.push(...CONSTANTS.CONTEXTUAL_SUGGESTIONS.MINIMAL);
+    }
+
+    return finalSuggestions.slice(0, CONSTANTS.DEFAULTS.MAX_SUGGESTIONS);
   }
 
   static formatPrompt(tweetData) {
@@ -119,7 +124,11 @@ class AIReplyService {
     return suggestions
       .filter((suggestion) => typeof suggestion === "string")
       .map((suggestion) => TextUtils.cleanText(suggestion))
-      .filter((suggestion) => suggestion.length > 0 && suggestion.length <= 280)
+      .filter(
+        (suggestion) =>
+          suggestion.length > 0 &&
+          suggestion.length <= CONSTANTS.LIMITS.MAX_TWEET_LENGTH
+      )
       .slice(0, CONSTANTS.DEFAULTS.MAX_SUGGESTIONS);
   }
 
