@@ -120,7 +120,9 @@ class PopupController {
 
   async loadSettings() {
     try {
-      const response = await this.sendMessage({ action: "getSettings" });
+      const response = await this.sendMessage({
+        action: CONSTANTS.MESSAGES.ACTIONS.GET_SETTINGS,
+      });
       if (response.success) {
         this.currentSettings = response.settings || {};
         this.updateUI();
@@ -210,16 +212,17 @@ class PopupController {
 
   async checkApiKeyStatus() {
     try {
-      const provider = this.currentSettings.aiProvider || "gemini";
+      const provider =
+        this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
       let apiKey = "";
       let hasValidKey = false;
       let errorMessage = null;
 
-      if (provider === "gemini") {
+      if (provider === CONSTANTS.DEFAULTS.AI_PROVIDER) {
         apiKey = this.currentSettings.geminiApiKey;
         if (apiKey?.trim()) {
           const response = await this.sendMessage({
-            action: "testGeminiAPI",
+            action: CONSTANTS.MESSAGES.ACTIONS.TEST_GEMINI_API,
             apiKey: apiKey,
           });
           hasValidKey = response.success;
@@ -231,7 +234,7 @@ class PopupController {
         apiKey = this.currentSettings.openaiApiKey;
         if (apiKey?.trim()) {
           const response = await this.sendMessage({
-            action: "testOpenAIAPI",
+            action: CONSTANTS.MESSAGES.ACTIONS.TEST_OPENAI_API,
             apiKey: apiKey,
           });
           hasValidKey = response.success;
@@ -277,7 +280,7 @@ class PopupController {
 
       try {
         const response = await chrome.tabs.sendMessage(tab.id, {
-          action: "ping",
+          action: CONSTANTS.MESSAGES.ACTIONS.PING,
         });
         return {
           success: true,
@@ -357,7 +360,7 @@ class PopupController {
     // Auto-hide after 10 seconds
     this.errorHideTimeout = setTimeout(() => {
       this.hideApiKeyError();
-    }, 10000);
+    }, CONSTANTS.ANIMATIONS.NOTIFICATION_DISPLAY);
   }
 
   hideApiKeyError() {
@@ -397,7 +400,8 @@ class PopupController {
   }
 
   handleApiKeyInput() {
-    const provider = this.currentSettings.aiProvider || "gemini";
+    const provider =
+      this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
     const currentApiKey = this.getCurrentApiKey();
     const inputField = this.elements.apiKey;
 
@@ -414,8 +418,9 @@ class PopupController {
   }
 
   getCurrentApiKey() {
-    const provider = this.currentSettings.aiProvider || "gemini";
-    return provider === "gemini"
+    const provider =
+      this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
+    return provider === CONSTANTS.DEFAULTS.AI_PROVIDER
       ? this.currentSettings.geminiApiKey
       : this.currentSettings.openaiApiKey;
   }
@@ -427,7 +432,7 @@ class PopupController {
     this.hideApiKeyError();
 
     // Update the API key field label and placeholder
-    if (provider === "gemini") {
+    if (provider === CONSTANTS.DEFAULTS.AI_PROVIDER) {
       this.elements.apiKeyLabel.textContent = "Gemini API Key";
       this.elements.apiKey.placeholder = "Enter your Gemini API key";
       this.elements.apiKeyLink.textContent = "Google AI Studio";
@@ -441,7 +446,7 @@ class PopupController {
 
     // Update the API key field value based on the selected provider
     const newApiKey =
-      provider === "gemini"
+      provider === CONSTANTS.DEFAULTS.AI_PROVIDER
         ? this.currentSettings.geminiApiKey || ""
         : this.currentSettings.openaiApiKey || "";
 
@@ -536,7 +541,10 @@ class PopupController {
     try {
       this.updateApiKeyVisualState(apiKey, "validating");
 
-      const action = provider === "gemini" ? "testGeminiAPI" : "testOpenAIAPI";
+      const action =
+        provider === CONSTANTS.DEFAULTS.AI_PROVIDER
+          ? CONSTANTS.MESSAGES.ACTIONS.TEST_GEMINI_API
+          : CONSTANTS.MESSAGES.ACTIONS.TEST_OPENAI_API;
       const response = await this.sendMessage({
         action: action,
         apiKey: apiKey,
@@ -563,12 +571,13 @@ class PopupController {
 
     if (this.elements.maxSuggestions) {
       this.elements.maxSuggestions.value =
-        this.currentSettings.maxSuggestions || 5;
+        this.currentSettings.maxSuggestions ||
+        CONSTANTS.DEFAULTS.MAX_SUGGESTIONS;
     }
 
     if (this.elements.aiProvider) {
       this.elements.aiProvider.value =
-        this.currentSettings.aiProvider || "gemini";
+        this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
       this.handleAiProviderChange(); // This will update the API key field and UI
     }
 
@@ -588,7 +597,7 @@ class PopupController {
       this.currentSettings.enabled = enabled;
 
       const response = await this.sendMessage({
-        action: "saveSettings",
+        action: CONSTANTS.MESSAGES.ACTIONS.SAVE_SETTINGS,
         settings: { enabled },
       });
 
@@ -606,7 +615,7 @@ class PopupController {
       ) {
         try {
           await chrome.tabs.sendMessage(tab.id, {
-            action: "toggleExtension",
+            action: CONSTANTS.MESSAGES.ACTIONS.TOGGLE_EXTENSION,
             enabled,
           });
         } catch (error) {
@@ -628,8 +637,9 @@ class PopupController {
     let shouldCheckStatus = false;
 
     if (element === this.elements.apiKey) {
-      const provider = this.currentSettings.aiProvider || "gemini";
-      if (provider === "gemini") {
+      const provider =
+        this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
+      if (provider === CONSTANTS.DEFAULTS.AI_PROVIDER) {
         setting.geminiApiKey = element.value;
       } else {
         setting.openaiApiKey = element.value;
@@ -647,7 +657,7 @@ class PopupController {
     if (Object.keys(setting).length > 0) {
       try {
         await this.sendMessage({
-          action: "saveSettings",
+          action: CONSTANTS.MESSAGES.ACTIONS.SAVE_SETTINGS,
           settings: setting,
         });
         Object.assign(this.currentSettings, setting);
@@ -678,7 +688,10 @@ class PopupController {
   initializeToggleState() {
     if (this.elements.enabledToggle && this.elements.enabledContainer) {
       this.updateToggleState();
-      setTimeout(() => this.updateToggleState(), 50); // Faster initialization
+      setTimeout(
+        () => this.updateToggleState(),
+        CONSTANTS.ANIMATIONS.BUTTON_STATE_CHANGE
+      ); // Faster initialization
     }
   }
 

@@ -5,12 +5,25 @@ const CONSTANTS = {
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
       TIMEOUT: 10000,
       MAX_RETRIES: 3,
+      GENERATION_CONFIG: {
+        temperature: 0.7,
+        maxOutputTokens: 500,
+        topP: 0.8,
+        topK: 40,
+      },
+      TEST_MODEL: "gpt-4o-mini", // For testing purposes
     },
     OPENAI: {
       ENDPOINT: "https://api.openai.com/v1/chat/completions",
       TIMEOUT: 10000,
       MAX_RETRIES: 3,
       MODEL: "gpt-4o-mini",
+      GENERATION_CONFIG: {
+        max_tokens: 500,
+        temperature: 0.7,
+        top_p: 0.8,
+      },
+      TEST_MODEL: "gpt-4", // For testing purposes
     },
   },
 
@@ -20,6 +33,8 @@ const CONSTANTS = {
     USE_GEMINI: true,
     USE_OPENAI: false,
     AI_PROVIDER: "gemini", // "gemini" or "openai"
+    GEMINI_API_KEY: "",
+    OPENAI_API_KEY: "",
   },
 
   SELECTORS: {
@@ -73,7 +88,8 @@ Hashtags: {hashtags}
 Mentions: {mentions}
 Author: {author}
 
-Generate only the reply suggestions, one per line, without numbering or additional text in JSON format.`,
+Generate only the reply suggestions, one per line, without numbering or additional text.`,
+    TEST_PROMPT: "Generate a simple test reply to: 'Hello world!'",
   },
 
   FALLBACK_SUGGESTIONS: [
@@ -86,6 +102,32 @@ Generate only the reply suggestions, one per line, without numbering or addition
     "This resonates with me completely.",
     "Appreciate you sharing your thoughts.",
   ],
+
+  CONTEXTUAL_SUGGESTIONS: {
+    QUESTION: [
+      "Great question! I'd love to hear more about this.",
+      "That's an interesting point to consider.",
+      "Thanks for bringing this up - it's worth discussing.",
+    ],
+    HASHTAG: [
+      "Love the {hashtag} vibes!",
+      "Thanks for sharing this perspective.",
+    ],
+    SHORT_TWEET: [
+      "Short and sweet! Thanks for sharing.",
+      "Appreciate you posting this.",
+    ],
+    LONG_TWEET: [
+      "This is really insightful, thanks for sharing!",
+      "Great point! I completely agree with you.",
+    ],
+    MENTION: ["Thanks for the mention {mention}!"],
+    MINIMAL: [
+      "Thanks for sharing this!",
+      "Interesting perspective!",
+      "Appreciate you posting this.",
+    ],
+  },
 
   ANIMATIONS: {
     BUTTON_STATE_CHANGE: 100,
@@ -105,6 +147,22 @@ Generate only the reply suggestions, one per line, without numbering or addition
       TEST_OPENAI_API: "testOpenAIAPI",
       UPDATE_STATS: "updateStats",
     },
+  },
+
+  LIMITS: {
+    MAX_TWEET_LENGTH: 280,
+    MIN_TWEET_LENGTH: 50,
+    MAX_SUGGESTIONS: 5,
+    MIN_SUGGESTIONS: 3,
+  },
+
+  ERROR_MESSAGES: {
+    API_KEY_EMPTY: "API key is empty",
+    API_REQUEST_TIMEOUT: "API request timed out",
+    INVALID_RESPONSE_FORMAT: "Invalid response format from API",
+    NO_SUGGESTIONS_GENERATED: "No suggestions generated",
+    INVALID_TWEET_CONTENT: "Invalid tweet content",
+    BACKGROUND_SCRIPT_TIMEOUT: "Background script communication timeout",
   },
 };
 
