@@ -637,8 +637,16 @@ class PopupController {
     let shouldCheckStatus = false;
 
     if (element === this.elements.apiKey) {
-      const provider =
-        this.currentSettings.aiProvider || CONSTANTS.DEFAULTS.AI_PROVIDER;
+      let provider = this.currentSettings.aiProvider;
+      
+      if (!provider) {
+        if (this.elements.apiKeyLabel.textContent.toLowerCase().includes("gemini")) {
+          provider = "gemini";
+        } else {
+          provider = "openai";
+        }
+        setting.aiProvider = provider;
+      }
       if (provider === CONSTANTS.DEFAULTS.AI_PROVIDER) {
         setting.geminiApiKey = element.value;
       } else {
