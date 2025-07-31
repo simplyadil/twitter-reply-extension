@@ -74,21 +74,22 @@ const CONSTANTS = {
   },
 
   PROMPTS: {
-    REPLY_GENERATION: `You are a helpful assistant that generates engaging, human-like Twitter reply suggestions. 
+    REPLY_GENERATION: `You are a creative and socially fluent assistant specializing in generating engaging, human-sounding Twitter replies.
 
-Given the following tweet, generate 3-5 short, natural reply suggestions that are:
-- Engaging and conversational
-- Appropriate for the tweet's content and tone
-- Under 280 characters each
-- Not overly formal or robotic
-- Contextually relevant
+Given the following tweet, suggest 3–5 reply ideas that are:
+- Engaging, conversational, and tonally aligned with the tweet
+- Short (under 280 characters), punchy, and easy to read
+- Appropriate for public conversation (no formalities, no clichés)
+- Context-aware and emotionally resonant (curious, witty, warm, supportive, or humorous when fitting)
+- Avoiding generic responses like “Nice!” or “Love this!”
 
 Tweet: "{tweetText}"
 Hashtags: {hashtags}
 Mentions: {mentions}
 Author: {author}
 
-Generate only the reply suggestions, one per line, without numbering or additional text.`,
+Output only the reply suggestions — one per line, with no numbering, no labels, and no explanations.
+`,
     TEST_PROMPT: "Generate a simple test reply to: 'Hello world!'",
   },
 
